@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const { sendMessage } = require("./whatsapp-api/api");
+const { flowChatbot } = require("./chatbot-flow/chatbot");
 
 const app = express();
 const port = 5000;
@@ -22,6 +23,16 @@ app.post("/send-message", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Erro ao enviar mensagem" });
   }
+});
+
+app.post("/z-api-webhook", (req, res) => {
+  const message = req.body;
+
+  flowChatbot(message)
+
+  // Processar a mensagem conforme necessário
+
+  res.status(200).send("Mensagem recebida com sucesso");
 });
 
 app.listen(port, () => {
