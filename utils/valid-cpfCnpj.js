@@ -1,4 +1,4 @@
-const validCpf = (cpf) => {
+const isValidCpf = (cpf) => {
   cpf = cpf.replace(/[^\d]+/g, ""); // Remove tudo que não é dígito
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false; // Elimina CPFs inválidos conhecidos
 
@@ -23,7 +23,7 @@ const validCpf = (cpf) => {
   return true;
 };
 
-const validCnpj = (cnpj) => {
+const isValidCnpj = (cnpj) => {
   cnpj = cnpj.replace(/[^\d]+/g, ""); // Remove tudo que não é dígito
   if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false; // Elimina CNPJs inválidos conhecidos
 
@@ -57,29 +57,20 @@ const validCnpj = (cnpj) => {
 /**
  * Small description of your action
  * @title Verificar se o CPF ou CNPJ é valido
- * @category Custom
- * @author Your_Name
+ * @category validation
+ * @author ana
  * @param {string} cpfCnpj
  */
-const validCpfCnpj = (cpfCnpj) => {
-  console.log("==== Validador de CPF e CNPJ ======", cpfCnpj);
+const isValidCPFOrCNPJ = (cpfCnpj) => {
+  const value = String(cpfCnpj).replace(/[^\d]+/g, "");
 
-  cpfCnpj = cpfCnpj.replace(/[^\d]+/g, "");
-  console.log("cpfCnpj", cpfCnpj);
-
-  // falta corrigir o uso de ponto e barra
-
-  if (!cpfCnpj) return false;
-  else if (cpfCnpj.length === 11) {
-    user.cpfCnpj = cpfCnpj;
-    console.log("user", user.cpfCnpj);
-    return validCpf(cpfCnpj) ? true : false;
-  } else if (cpfCnpj.length === 14) {
-    user.cpfCnpj = cpfCnpj;
-    console.log("user", user.cpfCnpj);
-    return validCnpj(cpfCnpj) ? true : false;
+  if (!value) return false;
+  else if (value.length === 11) {
+    return isValidCpf(value) ? true : false;
+  } else if (value.length === 14) {
+    return isValidCnpj(value) ? true : false;
   }
 };
 
-module.exports = { validCpfCnpj };
+module.exports = { isValidCPFOrCNPJ };
 

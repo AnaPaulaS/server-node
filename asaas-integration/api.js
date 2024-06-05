@@ -1,16 +1,7 @@
 const axios = require("axios");
 
-// interface PaymentInterface {
-//   customer: string;
-//   dueDate: string;
-//   value: string;
-//   bankSlipUrl: string;
-//   pixTransaction: string;
-// }
-
-const asaasApiKey =
-  "$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwODExMjM6OiRhYWNoXzdiOTdhMjE3LTU2YzMtNDBmMy1iZDkwLTljM2M5ZjEzOWU2Nw==";
-const asaasBaseUrl = "https://sandbox.asaas.com/api/v3";
+const asaasApiKey = process.env.API_KEY_ASAAS;
+const asaasBaseUrl = process.env.BASE_URL_ASAAS;
 
 const getUserByCPF = async (cpfCnpj) => {
   // JOSE
@@ -18,7 +9,7 @@ const getUserByCPF = async (cpfCnpj) => {
   // "cpfCnpj": "24971563792",
 
   try {
-    // Requisição para buscar os boletos do cliente pelo CPF
+    // buscar os dados do cliente pelo CPF
     const response = await axios.get(`${asaasBaseUrl}/customers`, {
       params: { cpfCnpj },
       headers: {
@@ -27,14 +18,12 @@ const getUserByCPF = async (cpfCnpj) => {
       },
     });
 
-    // console.log('=================customer response: ', response.data.data)
-
-    const user = response.data.data;
-    // console.log('user: ', user)
-
-    const userId = user.map((u) => u.id);
-    // console.log('customer do cliente: ', userId)
-    return userId;
+    if (response.data.totalCount === 0) {
+      return "unregistered_user";
+    } else {
+      // asaas permite ter mais de 1 cadastro para o mesmo CPF, estou pegando o primeiro
+      return response.data.data[0].id;
+    }
   } catch (error) {
     console.log("Erro ao buscar o usuario:", error);
   }
@@ -52,15 +41,10 @@ const getPayment = async (userId) => {
       },
     });
 
-    console.log("=======> response: ", response.data.data);
-
     if (response.data.data && response.data.data.length > 0) {
       const payments = response.data.data;
-      // console.log('=======> payments: ', payments)
 
       // FILTRAR OS NAO PAGOS OU O ULTIMO NAO PAGO - VERIFICAR
-
-      // console.log('=======> result bankSlipUrl', payments[0].bankSlipUrl)
 
       const value = {
         customer: payments[0].customer,
@@ -70,11 +54,9 @@ const getPayment = async (userId) => {
         invoiceUrl: payments[0].invoiceUrl,
         pixTransaction: payments[0].pixTransaction,
       };
-      console.log("=======> value ", value);
 
       return value;
     } else {
-      console.log("Não foi encontrado boletos para esse CPF/CNPJ");
       return null;
     }
   } catch (error) {
@@ -88,34 +70,31 @@ const getPayment = async (userId) => {
  * @title Solicitação de boleto
  * @category ASAAS_API
  * @author ana
- * @param {string} value - An example string variable
+ * @param {string} cpfCnpj - An example string variable
  */
-const getPaymentsByCPF = async (value) => {
+const getPaymentsByCPF = async (cpfCnpj) => {
+  const value = String(cpfCnpj).replace(/[^\d]+/g, "");
   console.log("==== START ASAAS INTEGRACAO ======", value);
   try {
     const userId = await getUserByCPF(value);
 
-    if (!userId) {
-      throw new Error("User not found or API request failed");
+    if (userId === "unregistered_user") {
+      return null;
     }
 
-    console.log('userId', userId)
-
     const payments = await getPayment(userId);
-    console.log("userPayments", payments);
 
-    if (payments) {
+    if (payments !== null) {
       return {
         bankSlipUrl: payments.bankSlipUrl,
         dueDate: payments.dueDate,
         value: payments.value,
         invoiceUrl: payments.invoiceUrl,
       };
-    }
+    } else return null;
   } catch (error) {
     console.log("Error:", error);
   }
 };
 
-// return getPaymentsByCPF(args.value)
 module.exports = { getPaymentsByCPF };

@@ -13,8 +13,9 @@ app.get("/", (req, res) => {
 
 app.use(bodyParser.json());
 
+
 app.post("/send-message", async (req, res) => {
-  console.log("request recived: /send-message");
+  console.log("request recived: /send-message",req.body);
   const { phone, message } = req.body;
 
   try {
@@ -28,9 +29,8 @@ app.post("/send-message", async (req, res) => {
 app.post("/z-api-webhook", (req, res) => {
   const message = req.body;
 
-  flowChatbot(message)
-
   // Processar a mensagem conforme necessário
+  flowChatbot(message)
 
   res.status(200).send("Mensagem recebida com sucesso");
 });
@@ -38,3 +38,5 @@ app.post("/z-api-webhook", (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
 });
+
+
