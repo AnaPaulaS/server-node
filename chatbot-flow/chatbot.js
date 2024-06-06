@@ -2,7 +2,7 @@ const { sendMessage } = require("../whatsapp-api/api");
 const { isValidCPFOrCNPJ } = require("../utils/valid-cpfCnpj");
 const { getPaymentsByCPF } = require("../asaas-integration/api");
 
-const moment = require('moment')
+const moment = require("moment");
 
 // Simples armazenamento de estados na memória (em produção, use um banco de dados)
 let conversationStates = {};
@@ -58,21 +58,39 @@ const flowChatbot = async (message) => {
         // Suponha que você tenha uma função para validar CPF/CNPJ
         responseMessage = `Buscando fatura para o CPF/CNPJ ${bodyMessage}...`;
 
-        await sendMessage(phone, responseMessage);
+        // await sendMessage(phone, responseMessage);
 
         // buscar a fatura no assas
 
         const payments = await getPaymentsByCPF(bodyMessage);
-        console.log('<<LOG: há pagamento em aberto? >>', payments=== null? 'nao': 'sim')
+        console.log(
+          "<<LOG: há pagamento em aberto? >>",
+          payments === null ? "nao" : "sim"
+        );
 
         if (payments === null) {
           responseMessage = "Não há fatura em aberto para esse CPF/CNPJ";
         } else {
-          const resp = [
-            `Valor a pagar: ${payments.value}`,
-            `Vencimento: ${moment(payments.dueDate).format('DD/MM/YYYY')}`,
-            `Link da fatura: ${payments.invoiceUrl}`,
-          ];
+          const resp = [];
+          if (payments.paymentsPending > 1) {
+            resp.push(
+              `Você possui ${payments.paymentsPending} faturas em aberto.\nAqui esta um resumo`
+            );
+          }
+          resp.push(`Valor à pagar: ${payments.value}`);
+          if (payments.paymentsPending === 1) {
+            resp.push(
+              `Vencimento: ${moment(payments.dueDate).format("DD/MM/YYYY")}`
+            );
+          }
+          resp.push(
+            `${
+              payments.paymentsPending === 1
+                ? "Link da fatura:"
+                : "Links das faturas:"
+            } ${payments.invoiceUrl}`
+          );
+
           responseMessage = resp.join("\n");
         }
 
@@ -88,8 +106,8 @@ const flowChatbot = async (message) => {
       break;
   }
 
-  const response = await sendMessage(phone, responseMessage);
-  console.log("----- response FINAL", response);
+  //   const response = await sendMessage(phone, responseMessage);
+  console.log("<<LOG: mensagem enviada para cliente:\n", responseMessage);
 };
 
 // Função para obter o estado atual de uma conversa
@@ -103,7 +121,7 @@ const getConversationState = (messageId) => {
       delete conversationStates[messageId];
       return null;
     }
-    
+
     return conversation.state;
   }
   return null;

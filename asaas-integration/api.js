@@ -29,30 +29,32 @@ const getUserByCPF = async (cpfCnpj) => {
   }
 };
 
-const getPayment = async (userId) => {
+const getPayment = async (userId, status) => {
   try {
     // Requisição para buscar os boletos do cliente pelo seu id
 
     const response = await axios.get(`${asaasBaseUrl}/payments`, {
-      params: { userId },
+      params: { userId, status },
       headers: {
         "Content-Type": "application/json",
         access_token: asaasApiKey,
       },
     });
 
-    if (response.data.data && response.data.data.length > 0) {
-      const payments = response.data.data;
+    const paymentData = response.data;
 
-      // FILTRAR OS NAO PAGOS OU O ULTIMO NAO PAGO - VERIFICAR
+    if (paymentData.data && paymentData.data.length > 0) {
+      const payments = paymentData.data;
+
+      const invoiceUrl = payments.map(payment => payment.invoiceUrl).join('\n')
+      const valuePayment = payments.reduce((sum, payment) => sum + payment.value, 0)
 
       const value = {
+        paymentsPending: paymentData.totalCount,
         customer: payments[0].customer,
-        dueDate: payments[0].dueDate,
-        value: payments[0].value,
-        bankSlipUrl: payments[0].bankSlipUrl,
-        invoiceUrl: payments[0].invoiceUrl,
-        pixTransaction: payments[0].pixTransaction,
+        dueDate: paymentData.totalCount === 1? payments[0].dueDate : null,
+        value: valuePayment,
+        invoiceUrl: invoiceUrl,
       };
 
       return value;
@@ -64,6 +66,7 @@ const getPayment = async (userId) => {
   }
 };
 
+
 /**
  * Integração de solicitação de boleto a api do gateway
  * objeto fatura contera link, linha digitavel do boleto, codigo pix etc
@@ -74,7 +77,7 @@ const getPayment = async (userId) => {
  */
 const getPaymentsByCPF = async (cpfCnpj) => {
   const value = String(cpfCnpj).replace(/[^\d]+/g, "");
-  console.log("==== START ASAAS INTEGRACAO ======", value);
+  console.log("<<LOG: ASAAS busca fatura para: ", value);
   try {
     const userId = await getUserByCPF(value);
 
@@ -82,10 +85,11 @@ const getPaymentsByCPF = async (cpfCnpj) => {
       return null;
     }
 
-    const payments = await getPayment(userId);
+    const payments = await getPayment(userId, "PENDING");
 
     if (payments !== null) {
       return {
+        paymentsPending: payments.paymentsPending,
         bankSlipUrl: payments.bankSlipUrl,
         dueDate: payments.dueDate,
         value: payments.value,
