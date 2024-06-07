@@ -23,7 +23,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/pitelecom
+            cd /home/ec2-user/pitelecom/server-node
             git pull origin main  # ou qualquer outro comando de atualização do código
             npm install  # Para instalar dependências, se necessário
             npm start    # Para iniciar o servidor
