@@ -14,7 +14,7 @@ app.get("/pagamento", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-  res.send('Olá você');
+  res.send('Olá você aqui esta seu deploy');
 });
 
 
