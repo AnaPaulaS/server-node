@@ -8,10 +8,15 @@ const { getPaymentsByCPF } = require("./asaas-integration/api");
 const app = express();
 const port = 5000;
 
-app.get("/", async (req, res) => {
+app.get("/pagamento", async (req, res) => {
   const resp = await getPaymentsByCPF("24971563792");
   res.send(resp);
 });
+
+app.get("/", async (req, res) => {
+  res.send('Olá você');
+});
+
 
 app.use(bodyParser.json());
 
