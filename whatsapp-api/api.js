@@ -5,7 +5,6 @@ const URL = process.env.URL_Z_API;
 const sendMessage = async (phone, message) => {
   try {
     console.log("<<Log: envio mensagem para o numero", phone, ">>");
-    console.log(" ");
     const response = await axios.post(
       `${URL}/send-text`,
       {
