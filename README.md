@@ -8,5 +8,4 @@ API_KEY_ASAAS=
 ### para execurar usando nodemon
 npm run dev
 
-
-https://787e-2804-842c-20-c2c0-6f83-1983-b843-e926.ngrok-free.app
+ssh -i chave.pem ec2-user@ec2-3-16-11-57.us-east-2.compute.amazonaws.com

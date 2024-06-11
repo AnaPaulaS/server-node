@@ -4,10 +4,6 @@ const asaasApiKey = process.env.API_KEY_ASAAS;
 const asaasBaseUrl = process.env.BASE_URL_ASAAS;
 
 const getUserByCPF = async (cpfCnpj) => {
-  // JOSE
-  // "customer": "cus_000006023762",
-  // "cpfCnpj": "24971563792",
-
   try {
     // buscar os dados do cliente pelo CPF
     const response = await axios.get(`${asaasBaseUrl}/customers`, {
