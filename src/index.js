@@ -5,6 +5,7 @@ const logger = require("./utils/logger");
 
 const messageRoutes = require("./routes/messageRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const { sendBillingNotifications } = require('./services/billingService');
 
 const app = express();
 const port = 5000;
@@ -12,6 +13,9 @@ app.use(bodyParser.json());
 
 app.use("/api", messageRoutes);
 app.use("/api", chatbotRoutes);
+
+// Roda o serviço de disparo de faturas a cada 24 horas
+setInterval(sendBillingNotifications, 24 * 60 * 60 * 1000);
 
 // Middleware para capturar erros globais
 app.use((err, req, res, next) => {
