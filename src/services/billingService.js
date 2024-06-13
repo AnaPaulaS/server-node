@@ -5,7 +5,7 @@ const path = require("path");
 const handlebars = require("handlebars");
 
 const { sendMessage } = require("../whatsapp-api/api");
-const { getPaymentsByCPF } = require("../asaas-integration/service");
+const { getFullDataPayments } = require("../asaas-integration/service");
 
 // Configure o transporte de email
 const transporter = nodemailer.createTransport({
@@ -39,7 +39,7 @@ const sendEmail = (to, subject, templateName, templateData) => {
     html: htmlToSend,
   };
 
-  console.log("mailOptions ", mailOptions ? 'ok': 'com erro' );
+//   console.log("mailOptions ", mailOptions ? 'ok': 'com erro' );
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -63,7 +63,7 @@ const sendBillingNotifications = async () => {
   dueDate.setDate(currentDate.getDate() + 5);
   const formattedDate = dueDate.toISOString().split("T")[0];
 
-  // verificar quais sao os clientes que devem ser notificados
+  // verificar quais sao os clientes que devem ser notificados neste dia
   const res = await pool.query(
     `
     SELECT name, cpfCnpj, phone, email 
@@ -72,30 +72,18 @@ const sendBillingNotifications = async () => {
     [formattedDate]
   );
 
-  // TODO: buscar no asaas as faturas de cada cliente
-
   res.rows.forEach(async (client) => {
-    const payments = await getPaymentsByCPF(client.cpfCnpj);
 
-    // outro request para codigo barra: payments/{id_payment}/identificationField
-    // para pix: payments/{id}/pixQrCode
-
-    const userData = {
-      nome_cliente: client.name,
-      data_vencimento:
-        payments.paymentsPending === 1 ? payments.dueDate : client.dueDate,
-      codigo_pix: "payments.codigo_pix",
-      codigo_barras: "payments.codigo_barras",
-      link_boleto: payments.invoiceUrl,
-    };
+    // Busca no asaas os dados para pagamento a serem enviados por email
+    const payments = await getFullDataPayments(client.cpfCnpj);
+    payments.username = client.name
 
     if (client.email) {
-      console.log("cliente apto ao envio",userData.link_boleto);
       sendEmail(
         client.email,
         "Sua fatura Pi Telecom chegou",
         "envio-fatura.html",
-        userData
+        payments
       );
     }
     if (client.phone) {

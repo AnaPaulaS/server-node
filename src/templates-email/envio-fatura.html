@@ -56,7 +56,7 @@
                         word-wrap: break-word;
                       "
                     >
-                      Olá {{nome_cliente}}
+                      Olá {{username}}
                     </div>
                   </div>
                 </div>
@@ -74,10 +74,14 @@
                 >
                   <div>
                     Você está recebendo sua fatura Pi Telecom com vencimento em
-                    <b>{{data_vencimento}}</b>.
+                    <br />
+                    <b>{{dueDate}}</b>
                   </div>
-                  <div>Para acessar o boleto, clique nos links abaixo:</div>
-                  <div><a href="{{link_boleto}}">{{link_boleto}}</a></div>
+                  <br />
+
+                  <div>Para acessar o boleto, clique no link abaixo:</div>
+                  <div><a href="{{invoiceUrl}}">{{invoiceUrl}}</a></div>
+
                   <div
                     style="
                       margin-top: 20px;
@@ -86,11 +90,11 @@
                       padding: 10px;
                     "
                   >
-                    <div>ou, pague pelo Pix</div>
+                    <div>Caso queira pagar por Pix, copie o código abaixo:</div>
                     <div
                       style="font-size: 12px; padding: 5px; user-select: all"
                     >
-                      {{codigo_pix}}
+                      {{pixCode}}
                     </div>
                   </div>
                   <div
@@ -101,11 +105,14 @@
                       padding: 10px;
                     "
                   >
-                    <div>ou, pague pelo código de barras</div>
+                    <div>
+                      Caso queira pagar pelo código de barras, copie o código
+                      abaixo:
+                    </div>
                     <div
                       style="font-size: 12px; padding: 5px; user-select: all"
                     >
-                      {{codigo_barras}}
+                      {{typeableCode}}
                     </div>
                   </div>
                 </div>
@@ -154,48 +161,3 @@
     </table>
   </body>
 </html>
-
-<!-- <html lang="pt-br"><head><meta charset=utf-8><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"></head><body style="font-family: sans-serif, Arial, Verdana; background-color: #eee; color: #444; user-select: none; margin: 0 auto !important;">
-	<table style="width: 100%; text-align: center;">
-		<tbody>
-			<tr>
-				<td align="center">
-					<div style="width: 90%; min-width: 200px; max-width: 650px; height: 95%; margin-top: 30px;">
-						<div style="box-shadow: 0em 0em .9em .4em #ccc; background-color: #fafafa; border: solid 1px #ccc; border-radius: 15px; margin-top: 20px;">
-							<div style="font-weight: bold; font-size: 18px; background-color: #fe772c; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-								<div style="padding: 40px; color: #fff;">
-									<div style="font-weight: bold; font-size: 30px; word-wrap: break-word;">Olá [nome_cliente]</div>
-								</div>
-							</div>
-							<div style="padding: 20px;"><img src="https://img.icons8.com/cotton/128/000000/barcode-approve--v1.png" /></div>
-							<div style="min-height: 100px; padding: 10px 30px 10px 30px; word-wrap: break-word;">
-                                
-								<div>[nome_cliente], segue em anexo a(s) fatura(s).</div>
-								<div>[nome_cliente], segue em anexo a fatura com vencimento em <b>[data_vencimento]</b>.</div>
-								
-								<div>Baixe o arquivo no formato PDF para pagamento.</div>
-								<div style="margin-top: 20px; border-radius: 5px; background-color: #eee; padding: 10px;">
-									<div>ou, pague pelo Pix</div>
-									<div style="font-size: 12px; padding: 5px; user-select: all;">[codigo_pix]</div>
-								</div>
-								<div style="margin-top: 20px; border-radius: 5px; background-color: #eee; padding: 10px;">
-									<div>ou, pague pelo código de barras</div>
-									<div style="font-size: 12px; padding: 5px; user-select: all;">[código_barras]</div>
-								</div>
-                            </div>
-							<div style="padding: 10px; display: flex; justify-content: center; align-items: center; border: 1px solid #ddd;">
-								<div style="width: 100px; height: 100px; margin-right: 20px;"><img style="width: 100%; height: auto;" src="https://raw.githubusercontent.com/AnaPaulaS/midia-pi-telecom/main/logo-circulo.png" alt="Logo Pi Telecom" /></div>
-								<div style="text-align: left; font-size: 16px; padding: 40px 20px 40px 20px;">
-									<p style="margin: 0; font-weight: bold; color: #fe772c;">Pi Telecom</p>
-									<p style="font-size: 14px; margin: 0;">Telefone: (31)99591-3087</p>
-									<p style="font-size: 14px; margin: 5px 0;">Email: pitelecom2020@gmail.com</p>
-									<p style="font-size: 14px; margin: 0;">https://pitelecom.net.br</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	</body></html> -->
