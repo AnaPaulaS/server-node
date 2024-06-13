@@ -22,20 +22,21 @@ const getPaymentsByCPF = async (cpfCnpj) => {
     const payments = await getPayment(userId, "PENDING");
 
     if (payments !== null) {
-      const invoiceUrl = payments
+      const invoiceUrl = payments.data
         .map((payment) => payment.invoiceUrl)
         .join("\n");
-      const valuePayment = payments.reduce(
+
+      const valuePayment = payments.data.reduce(
         (sum, payment) => sum + payment.value,
         0
       );
 
       return {
         paymentsPending: payments.totalCount,
-        customer: payments[0].customer,
-        dueDate: payments.totalCount === 1 ? payments[0].dueDate : null,
+        customer: payments.data[0].customer,
+        dueDate: payments.totalCount === 1 ? payments.data[0].dueDate : null,
         value: valuePayment,
-        invoiceUrl: invoiceUrl,
+        invoiceUrl: invoiceUrl, // alterar esse formato que usa \n nao ta bom
       };
     } else return null;
   } catch (error) {

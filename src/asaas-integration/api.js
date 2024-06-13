@@ -40,7 +40,7 @@ const getPayment = async (userId, status) => {
     const paymentData = response.data;
 
     if (paymentData.data && paymentData.data.length > 0) {
-      return paymentData.data
+      return paymentData
     } else {
       return null;
     }
