@@ -31,7 +31,7 @@ const sendEmail = (to, subject, templateName, templateData) => {
   // Compilar o template com Handlebars
   const template = handlebars.compile(source);
   const htmlToSend = template(templateData);
-  
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to,
@@ -39,7 +39,7 @@ const sendEmail = (to, subject, templateName, templateData) => {
     html: htmlToSend,
   };
 
-//   console.log("mailOptions ", mailOptions ? 'ok': 'com erro' );
+  //   console.log("mailOptions ", mailOptions ? "ok" : "com erro");
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -48,12 +48,6 @@ const sendEmail = (to, subject, templateName, templateData) => {
       console.log("Email sent:", info.response);
     }
   });
-};
-
-// Função para enviar mensagem no WhatsApp
-const sendWhatsAppMessage = async (to, message) => {
-  //   await sendMessage(to, message);
-  //   console.log("enviar msg por wpp", to, message);
 };
 
 // Função para disparar faturas
@@ -73,22 +67,39 @@ const sendBillingNotifications = async () => {
   );
 
   res.rows.forEach(async (client) => {
-
     // Busca no asaas os dados para pagamento a serem enviados por email
     const payments = await getFullDataPayments(client.cpfCnpj);
-    payments.username = client.name
+    payments.username = client.name;
 
-    if (client.email) {
-      sendEmail(
-        client.email,
-        "Sua fatura Pi Telecom chegou",
-        "envio-fatura.html",
-        payments
-      );
-    }
+    // if (client.email) {
+    //   sendEmail(
+    //     client.email,
+    //     "Sua fatura Pi Telecom chegou",
+    //     "envio-fatura.html",
+    //     payments
+    //   );
+    // }
     if (client.phone) {
-      const message = `Olá ${client.name}, sua fatura vence em 5 dias. Por favor, verifique seu email para mais detalhes.`;
-      sendWhatsAppMessage(client.phone, message);
+      const message = `
+        Olá ${client.name}, você está recebendo sua fatura Pi Telecom com vencimento em\n${payments.dueDate}\n
+        Para acessar o boleto, clique no link abaixo:\n${payments.invoiceUrl}\n
+        Caso queira pagar por Pix, copie o código abaixo:\n${payments.pixCode}\n
+        Caso queira pagar pelo código de barras, copie o código abaixo:\n${payments.typeableCode}`;
+      
+
+      const messagePart1 = `
+        Olá ${client.name}, você está recebendo sua fatura Pi Telecom com vencimento em\n${payments.dueDate}\n
+        Para acessar o boleto, clique no link abaixo:\n${payments.invoiceUrl}\nCaso queira pagar por Pix, copie o código abaixo:`;
+      const messagePart2 = payments.pixCode;
+      const messagePart3 =
+        "Caso queira pagar pelo código de barras, copie o código abaixo:";
+      const messagePart4 = payments.typeableCode;
+
+      // TODO: mandar tudo em 1 mensagem ou mandar picado pra facilitar a copia dos codigos?
+
+      //   await sendMessage(client.phone, message);
+
+      console.log(message);
     }
   });
 };
