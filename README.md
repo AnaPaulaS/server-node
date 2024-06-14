@@ -5,6 +5,16 @@ CLIENT_TOKEN_Z_API={Client_Token}
 BASE_URL_ASAAS=https://sandbox.asaas.com/api/v3
 API_KEY_ASAAS=
 
+DB_USER=user
+DB_HOST=localhost
+DB_DATABASE=database
+DB_PASSWORD=senha
+
+EMAIL_USER=
+EMAIL_PASSWORD=
+
+
+
 ### para executar usando nodemon
 npm run dev
 
