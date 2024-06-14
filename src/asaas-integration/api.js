@@ -28,7 +28,7 @@ const getUserByCPF = async (cpfCnpj) => {
 const getPayment = async (userId, status) => {
   try {
     // Requisição para buscar os boletos do cliente pelo seu id
-    
+
     const response = await axios.get(`${asaasBaseUrl}/payments`, {
       params: { userId, status },
       headers: {
@@ -40,7 +40,7 @@ const getPayment = async (userId, status) => {
     const paymentData = response.data;
 
     if (paymentData.data && paymentData.data.length > 0) {
-      return paymentData.data
+      return paymentData;
     } else {
       return null;
     }
@@ -49,4 +49,57 @@ const getPayment = async (userId, status) => {
   }
 };
 
-module.exports = { getUserByCPF, getPayment };
+const getPaymentTypeableCode = async (payId) => {
+  try {
+    const response = await axios.get(
+      `${asaasBaseUrl}/payments/${payId}/identificationField`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          access_token: asaasApiKey,
+        },
+      }
+    );
+
+    const paymentData = response.data;
+
+    if (paymentData) {
+      return paymentData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log("Erro ao buscar os codigo pix:", error);
+  }
+};
+
+const getPaymentPixCode = async (payId) => {
+  try {
+    const response = await axios.get(
+      `${asaasBaseUrl}/payments/${payId}/pixQrCode`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          access_token: asaasApiKey,
+        },
+      }
+    );
+
+    const paymentData = response.data;
+    
+    if (paymentData) {
+      return paymentData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log("Erro ao buscar os codigo pix:", error);
+  }
+};
+
+module.exports = {
+  getUserByCPF,
+  getPayment,
+  getPaymentTypeableCode,
+  getPaymentPixCode,
+};
