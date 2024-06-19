@@ -39,7 +39,7 @@ const sendEmail = (to, subject, templateName, templateData) => {
     html: htmlToSend,
   };
 
-  //   console.log("mailOptions ", mailOptions ? "ok" : "com erro");
+    console.log("mailOptions ", mailOptions ? "ok" : "com erro");
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -50,56 +50,100 @@ const sendEmail = (to, subject, templateName, templateData) => {
   });
 };
 
-// Função para disparar faturas
-const sendBillingNotifications = async () => {
+/**
+ * Função para buscar os usuários a partir de uma data a ser considerada
+ */
+const searchUsersDatabase = async (date, comparison) => {
   const currentDate = new Date();
   const dueDate = new Date();
-  dueDate.setDate(currentDate.getDate() + 5);
+  dueDate.setDate(currentDate.getDate() + date);
   const formattedDate = dueDate.toISOString().split("T")[0];
 
   // verificar quais sao os clientes que devem ser notificados neste dia
-  const res = await pool.query(
+  const users = await pool.query(
     `
     SELECT name, cpfCnpj, phone, email 
     FROM clients 
-    WHERE due_date = $1`,
+    WHERE due_date ${comparison} $1`,
     [formattedDate]
   );
 
-  res.rows.forEach(async (client) => {
+  return users;
+};
+
+// Função para disparar faturas
+const sendBillingNotifications = async () => {
+  // Quando a fatura for gerada e deve ser enviada por email e/ou whatsapp para o clinte
+  const usersInvoiceGenerated = await searchUsersDatabase(5, "=");
+
+  usersInvoiceGenerated.rows.forEach(async (client) => {
     // Busca no asaas os dados para pagamento a serem enviados por email
     const payments = await getFullDataPayments(client.cpfCnpj);
     payments.username = client.name;
 
-    // if (client.email) {
-    //   sendEmail(
-    //     client.email,
-    //     "Sua fatura Pi Telecom chegou",
-    //     "envio-fatura.html",
-    //     payments
-    //   );
-    // }
+    if (client.email) {
+      // sendEmail(
+      //   client.email,
+      //   "Sua fatura Pi Telecom chegou",
+      //   "envio-fatura.html",
+      //   payments
+      // );
+    }
     if (client.phone) {
       const message = `
         Olá ${client.name}, você está recebendo sua fatura Pi Telecom com vencimento em\n${payments.dueDate}\n
         Para acessar o boleto, clique no link abaixo:\n${payments.invoiceUrl}\n
         Caso queira pagar por Pix, copie o código abaixo:\n${payments.pixCode}\n
-        Caso queira pagar pelo código de barras, copie o código abaixo:\n${payments.typeableCode}`;
-      
+        Caso queira pagar pelo código de barras, copie o código abaixo:\n${payments.typeableCode}\n\n
+        Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`;
 
-      const messagePart1 = `
-        Olá ${client.name}, você está recebendo sua fatura Pi Telecom com vencimento em\n${payments.dueDate}\n
-        Para acessar o boleto, clique no link abaixo:\n${payments.invoiceUrl}\nCaso queira pagar por Pix, copie o código abaixo:`;
-      const messagePart2 = payments.pixCode;
-      const messagePart3 =
-        "Caso queira pagar pelo código de barras, copie o código abaixo:";
-      const messagePart4 = payments.typeableCode;
+      // console.log(message);
+      // await sendMessage(client.phone, message);
+    }
+  });
 
-      // TODO: mandar tudo em 1 mensagem ou mandar picado pra facilitar a copia dos codigos?
+  // Quando a fatura ainda nao foi paga e o vencimento é para a data atual
+  const usersInvoiceDue = await searchUsersDatabase(0, "=");
+  usersInvoiceDue.rows.forEach(async (client) => {    
+    const payments = await getFullDataPayments(client.cpfCnpj);    
+    payments.username = client.name;
 
-      //   await sendMessage(client.phone, message);
+    if (client.email) {
+      console.log("vai receber email de lembrete:", client.name);
+      sendEmail(
+        client.email,
+        "Sua fatura Pi Telecom vence hoje!",
+        "lembrete-vencimento.html",
+        payments
+      );
+    }
+    if (client.phone) {
+      const message = `
+      Olá ${client.name}, a sua fatura da Pi Telecom vence hoje e este é apenas um lembrete.\n
+      Se você já efetuou o pagamento, por favor, desconsidere essa mensagem.\n
+      Pagar sua fatura é bem simples, basta acessar o link abaixo e visualizar seu boleto.\n
+      ${payments.invoiceUrl}\n\n
+      Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`;
 
       console.log(message);
+      // await sendMessage(client.phone, message);
+    }
+  });
+
+  // Quando a fatura ainda nao foi paga e o vencimento já passou alguns dias
+  const usersOverdueInvoice = await searchUsersDatabase(0, "<");
+  // aqui há problema no tempo, preciso pegar usuario com 3 dias de vencimento
+
+  usersOverdueInvoice.rows.forEach(async (client) => {    
+    if (client.phone) {
+      const message = `
+      Olá ${client.name}, sua fatura com a Pi Telecom encontra-se em aberto há [x_dias] dias, evite o bloqueio.\n 
+      Pagar sua fatura é bem simples, basta acessar o link abaixo e visualizar seu boleto\n
+      ${payments.invoiceUrl}\n\n
+      Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`;
+
+      console.log(message);
+      // await sendMessage(client.phone, message);
     }
   });
 };

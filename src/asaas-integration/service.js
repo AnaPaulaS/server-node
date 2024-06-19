@@ -59,7 +59,7 @@ const getFullDataPayments = async (cpfCnpj) => {
       return null;
     }
 
-    const payments = await getPayment(userId, "PENDING");
+    const payments = await getPayment(userId, "PENDING"); // pegar o vencido tbm
     if (payments === null) {
       return null;
     }
