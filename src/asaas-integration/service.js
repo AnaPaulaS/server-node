@@ -50,7 +50,7 @@ const getPaymentsByCPF = async (cpfCnpj) => {
   }
 };
 
-const getFullDataPayments = async (cpfCnpj) => {
+const getFullDataPayments = async (cpfCnpj,statusPayment) => {
   const value = String(cpfCnpj).replace(/[^\d]+/g, "");
   try {
     const userId = await getUserByCPF(value);
@@ -59,7 +59,7 @@ const getFullDataPayments = async (cpfCnpj) => {
       return null;
     }
 
-    const payments = await getPayment(userId, "PENDING"); // pegar o vencido tbm
+    const payments = await getPayment(userId, statusPayment); // pegar o vencido tbm
     if (payments === null) {
       return null;
     }

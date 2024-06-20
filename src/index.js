@@ -16,7 +16,7 @@ app.use("/api", messageRoutes);
 app.use("/api", chatbotRoutes);
 
 // Agendar a tarefa para rodar todos os dias às 8h da manhã
-cron.schedule('0 8 * * *', () => {
+cron.schedule('0 10 * * *', () => {
   console.log('Rodando envio de email as 8hrs');
   sendBillingNotifications();
 });

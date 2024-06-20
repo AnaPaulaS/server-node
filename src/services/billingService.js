@@ -6,6 +6,7 @@ const handlebars = require("handlebars");
 
 const { sendMessage } = require("../whatsapp-api/api");
 const { getFullDataPayments } = require("../asaas-integration/service");
+const AsyncQueue = require("./asyncQueue");
 
 // Configure o transporte de email
 const transporter = nodemailer.createTransport({
@@ -50,6 +51,24 @@ const sendEmail = (to, subject, templateName, templateData) => {
   });
 };
 
+const sendMessageWithDelay = async (client, payments, config) => {
+  await new Promise((resolve) => setTimeout(resolve, 5000)); // Delay de 5 segundos
+
+  if (client.email) {
+    sendEmail(
+      client.email,
+      config.emailSubject,
+      config.emailTemplate,
+      payments
+    );
+  }
+  if (client.phone) {
+    const message = config.message(client, payments);
+    // await sendMessage(client.phone, message);
+    console.log(message);
+  }
+};
+
 /**
  * Função para buscar os usuários a partir de uma data a ser considerada
  */
@@ -85,70 +104,60 @@ const sendBillingNotifications = async () => {
       isPast: false,
       emailSubject: "Sua fatura Pi Telecom chegou",
       emailTemplate: "envio-fatura.html",
+      statusPayment: "PENDING",
       message: (client, payments) => `
         Olá ${client.name}, você está recebendo sua fatura Pi Telecom com vencimento em\n${payments.dueDate}\n
         Para acessar o boleto, clique no link abaixo:\n${payments.invoiceUrl}\n
         Caso queira pagar por Pix, copie o código abaixo:\n${payments.pixCode}\n
         Caso queira pagar pelo código de barras, copie o código abaixo:\n${payments.typeableCode}\n\n
         Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`,
-      consoleLogMessage: "a vencer em 5 dias: ",
     },
     {
       days: 0,
       isPast: false,
       emailSubject: "Sua fatura Pi Telecom vence hoje!",
       emailTemplate: "lembrete-vencimento.html",
+      statusPayment: "PENDING",
       message: (client, payments) => `
         Olá ${client.name}, a sua fatura da Pi Telecom vence hoje e este é apenas um lembrete.\n
         Pagar sua fatura é bem simples, basta acessar o link abaixo e visualizar seu boleto.\n
         ${payments.invoiceUrl}\n
         Se você já efetuou o pagamento, por favor, desconsidere essa mensagem.\n
         Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`,
-      consoleLogMessage: "vence hoje: ",
     },
     {
       days: 3,
       isPast: true,
       emailSubject: "Fatura em aberta",
       emailTemplate: "fatura-vencida.html",
+      statusPayment: "OVERDUE",
       message: (client, payments) => `
         Olá ${client.name}, sua fatura com a Pi Telecom encontra-se em aberto há 3 dias, evite o bloqueio.\n 
         Pagar sua fatura é bem simples, basta acessar o link abaixo e visualizar seu boleto\n
         ${payments.invoiceUrl}\n\n
         Essa é uma mensagem automática da Pi Telecom, não é necessário responde-lá.`,
-      consoleLogMessage: "venceu a 3 dias: ",
     },
   ];
 
-  const processClients = async (config) => {
+  // Cria uma fila com limite de 1 conexao por vez
+  const queue = new AsyncQueue(1);
+
+  for (const config of notificationConfigs) {
+    // await processClients(config);
     const users = await searchUsersDatabase(config.days, config.isPast);
 
-    users.rows.forEach(async (client) => {
+    // Enfileira cada cliente para envio de e-mail
+    for (const client of users.rows) {
       const payments = await getFullDataPayments(client.cpfCnpj);
       payments.username = client.name;
 
-      console.log(config.consoleLogMessage, client.name);
-
-      if (client.email) {
-        sendEmail(
-          client.email,
-          config.emailSubject,
-          config.emailTemplate,
-          payments
-        );
-      }
-      if (client.phone) {
-        const message = config.message(client, payments);
-        console.log(message);
-        // await sendMessage(client.phone, message);
-      }
-      console.log('\n===================================\n')
-    });
-  };
-
-  for (const config of notificationConfigs) {
-    await processClients(config);
+      // Enfileira a função de envio de e-mail com atraso
+      await queue.enqueue(() => sendMessageWithDelay(client, payments, config));
+      // console.log("\n===================================\n");
+    }
   }
+  // Aguarda a conclusão de todos os envios
+  await queue.run();
 };
 
 module.exports = {
