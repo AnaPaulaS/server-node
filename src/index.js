@@ -15,20 +15,20 @@ app.use(bodyParser.json());
 app.use("/api", messageRoutes);
 app.use("/api", chatbotRoutes);
 
-// Agendar a tarefa para rodar todos os dias às 8h da manhã
+// Agendar a tarefa para rodar todos os dias às 7h da manhã
 cron.schedule('0 10 * * *', () => {
-  console.log('Rodando envio de email as 8hrs');
+  logger.info('Servidor rodando envio de email as 7hrs')
   sendBillingNotifications();
+});
+
+app.listen(port, () => {
+  logger.info(`Servidor rodando em http://localhost:${port}`);
 });
 
 // Middleware para capturar erros globais
 app.use((err, req, res, next) => {
   logger.error(err.message, { stack: err.stack });
   res.status(500).json({ error: "Erro interno do servidor" });
-});
-
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
 });
 
 // Capturar exceções não tratadas e rejeições de Promises

@@ -7,6 +7,7 @@ const handlebars = require("handlebars");
 const { sendMessage } = require("../whatsapp-api/api");
 const { getFullDataPayments } = require("../asaas-integration/service");
 const AsyncQueue = require("./asyncQueue");
+const logger = require("../utils/logger");
 
 // Configure o transporte de email
 const transporter = nodemailer.createTransport({
@@ -40,13 +41,13 @@ const sendEmail = (to, subject, templateName, templateData) => {
     html: htmlToSend,
   };
 
-  // console.log("mailOptions ", mailOptions ? "ok" : "com erro");
+  logger.debug("mailOptions ", mailOptions ? "ok" : "com erro");
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error("Error sending email:", error);
+      logger.error("Erro ao enviar email:", error);
     } else {
-      console.log("Email sent:", info.response);
+      logger.debug("Email sent:", info.response)
     }
   });
 };
@@ -64,8 +65,9 @@ const sendMessageWithDelay = async (client, payments, config) => {
   }
   if (client.phone) {
     const message = config.message(client, payments);
-    // await sendMessage(client.phone, message);
-    console.log(message);
+    // TODO: descomentar
+    // await sendMessage(client.phone, message);    
+    logger.info(message);
   }
 };
 
@@ -153,7 +155,6 @@ const sendBillingNotifications = async () => {
 
       // Enfileira a função de envio de e-mail com atraso
       await queue.enqueue(() => sendMessageWithDelay(client, payments, config));
-      // console.log("\n===================================\n");
     }
   }
   // Aguarda a conclusão de todos os envios

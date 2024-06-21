@@ -1,10 +1,11 @@
 const axios = require("axios");
+const logger = require("../utils/logger");
 
 const URL = process.env.URL_Z_API;
 
 const sendMessage = async (phone, message) => {
+  logger.http(`Requisição enviada para ${URL}/send-text e telefone ${phone}`)
   try {
-    console.log("<<Log: envio mensagem para o numero", phone, ">>");
     const response = await axios.post(
       `${URL}/send-text`,
       {
@@ -21,7 +22,7 @@ const sendMessage = async (phone, message) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao enviar mensagem:", error);
+    logger.error("Erro ao enviar mensagem:", { message: error.message, stack: error.stack });
     throw error;
   }
 };

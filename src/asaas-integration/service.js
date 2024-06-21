@@ -1,5 +1,7 @@
 const moment = require("moment");
 
+const logger = require("../utils/logger");
+
 const {
   getUserByCPF,
   getPayment,
@@ -17,7 +19,7 @@ const {
  */
 const getPaymentsByCPF = async (cpfCnpj) => {
   const value = String(cpfCnpj).replace(/[^\d]+/g, "");
-  console.log("<<LOG: ASAAS busca fatura para: ", value);
+  logger.debug('Asaas - solicitação de fatura para o cpfCnpj',value)
   try {
     const userId = await getUserByCPF(value);
 
@@ -46,7 +48,8 @@ const getPaymentsByCPF = async (cpfCnpj) => {
       };
     } else return null;
   } catch (error) {
-    console.log("Error:", error);
+    logger.error("Erro:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 
@@ -59,7 +62,7 @@ const getFullDataPayments = async (cpfCnpj,statusPayment) => {
       return null;
     }
 
-    const payments = await getPayment(userId, statusPayment); // pegar o vencido tbm
+    const payments = await getPayment(userId, statusPayment);
     if (payments === null) {
       return null;
     }
@@ -88,7 +91,8 @@ const getFullDataPayments = async (cpfCnpj,statusPayment) => {
     };
 
   } catch (error) {
-    console.log("Error:", error);
+    logger.error("Erro:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 
