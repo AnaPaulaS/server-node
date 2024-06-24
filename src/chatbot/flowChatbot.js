@@ -12,7 +12,9 @@ let conversationStates = {};
 const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutos
 
 const flowChatbot = async (message) => {
-  logger.debug(`Asaas - Mensagem recebida de ${message.senderName}: ${message.text.message}`)
+  logger.debug(
+    `Asaas - Mensagem recebida de ${message.senderName}: ${message.text.message}`
+  );
 
   const phone = message.phone;
   const bodyMessage = message.text.message;
@@ -58,10 +60,10 @@ const flowChatbot = async (message) => {
         responseMessage = `Buscando fatura para o CPF/CNPJ ${bodyMessage}...`;
 
         // TODO: descomentar quando integrar com z-api
-        // await sendMessage(phone, responseMessage);
+        await sendMessage(phone, responseMessage);
 
         const payments = await getPaymentsByCPF(bodyMessage);
-        
+
         if (payments === null) {
           responseMessage = "Não há fatura em aberto para esse CPF/CNPJ";
         } else {
@@ -101,8 +103,8 @@ const flowChatbot = async (message) => {
   }
 
   // TODO: descomentar quando integrar com z-api
-  //   const response = await sendMessage(phone, responseMessage);
-  logger.info("mensagem enviada para cliente:\n", responseMessage)
+  const response = await sendMessage(phone, responseMessage);
+  logger.info("mensagem enviada para cliente:\n", responseMessage);
 };
 
 // Função para obter o estado atual de uma conversa

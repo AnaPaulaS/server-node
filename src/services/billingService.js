@@ -66,7 +66,7 @@ const sendMessageWithDelay = async (client, payments, config) => {
   if (client.phone) {
     const message = config.message(client, payments);
     // TODO: descomentar
-    // await sendMessage(client.phone, message);    
+    await sendMessage(client.phone, message);    
     logger.info(message);
   }
 };
