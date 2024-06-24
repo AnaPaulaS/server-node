@@ -4,8 +4,66 @@ const logger = require("../utils/logger");
 const asaasApiKey = process.env.API_KEY_ASAAS;
 const asaasBaseUrl = process.env.BASE_URL_ASAAS;
 
+const createCustomer = async (cpfCnpj, mobilePhone, name) => {
+  logger.http(`POST enviado para ${asaasBaseUrl}/customers`);
+  try {
+    const response = await axios.post(
+      `${asaasBaseUrl}/customers`,
+      {
+        cpfCnpj: cpfCnpj,
+        mobilePhone: mobilePhone,
+        name: name,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          access_token: asaasApiKey,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    logger.error("Erro ao criar usuário:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    throw error;
+  }
+};
+
+const generatePixPayment = async (customer) => {
+  logger.http(`POST enviado para ${asaasBaseUrl}/payments`);
+  try {
+    const response = await axios.post(
+      `${asaasBaseUrl}/payments`,
+      {
+        customer: customer,
+        billingType: "PIX",
+        dueDate: new Date().toISOString().split("T")[0],
+        value: 20.0,
+        description: "Cobrança wifi pre-pago Pi Telecom",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          access_token: asaasApiKey,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    logger.error("Erro ao criar cobrança pix:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    throw error;
+  }
+};
+
 const getUserByCPF = async (cpfCnpj) => {
-  logger.http(`Requisição enviada para ${asaasBaseUrl}/customers`)
+  logger.http(`GET enviado para ${asaasBaseUrl}/customers`);
   try {
     const response = await axios.get(`${asaasBaseUrl}/customers`, {
       params: { cpfCnpj },
@@ -22,13 +80,16 @@ const getUserByCPF = async (cpfCnpj) => {
       return response.data.data[0].id;
     }
   } catch (error) {
-    logger.error("Erro ao buscar o usuário:", { message: error.message, stack: error.stack });
+    logger.error("Erro ao buscar o usuário:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 };
 
 const getPayment = async (userId, status) => {
-  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments`)
+  logger.http(`GET enviado para ${asaasBaseUrl}/payments`);
   try {
     // Requisição para buscar os boletos do cliente pelo seu id
 
@@ -48,13 +109,18 @@ const getPayment = async (userId, status) => {
       return null;
     }
   } catch (error) {
-    logger.error("Erro ao buscar os boletos:", { message: error.message, stack: error.stack });
+    logger.error("Erro ao buscar os boletos:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 };
 
 const getPaymentTypeableCode = async (payId) => {
-  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments/${payId}/identificationField`)
+  logger.http(
+    `GET enviado para ${asaasBaseUrl}/payments/${payId}/identificationField`
+  );
   try {
     const response = await axios.get(
       `${asaasBaseUrl}/payments/${payId}/identificationField`,
@@ -74,13 +140,18 @@ const getPaymentTypeableCode = async (payId) => {
       return null;
     }
   } catch (error) {
-    logger.error("Erro ao buscar o codigo de barras:", { message: error.message, stack: error.stack });
+    logger.error("Erro ao buscar o codigo de barras:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 };
 
 const getPaymentPixCode = async (payId) => {
-  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments/${payId}/pixQrCode`)
+  logger.http(
+    `GET enviado para ${asaasBaseUrl}/payments/${payId}/pixQrCode`
+  );
   try {
     const response = await axios.get(
       `${asaasBaseUrl}/payments/${payId}/pixQrCode`,
@@ -93,14 +164,17 @@ const getPaymentPixCode = async (payId) => {
     );
 
     const paymentData = response.data;
-    
+
     if (paymentData) {
       return paymentData;
     } else {
       return null;
     }
   } catch (error) {
-    logger.error("Erro ao buscar o codigo pix:", { message: error.message, stack: error.stack });
+    logger.error("Erro ao buscar o codigo pix:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 };
@@ -110,4 +184,6 @@ module.exports = {
   getPayment,
   getPaymentTypeableCode,
   getPaymentPixCode,
+  generatePixPayment,
+  createCustomer
 };

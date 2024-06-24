@@ -72,5 +72,5 @@ const isValidCPFOrCNPJ = (cpfCnpj) => {
   }
 };
 
-module.exports = { isValidCPFOrCNPJ };
+module.exports = { isValidCPFOrCNPJ, isValidCpf };
 

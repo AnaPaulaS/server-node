@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const logger = require("./utils/logger");
 const messageRoutes = require("./routes/messageRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const pixRoutes = require('./routes/pixRoutes');
+// const userRoutes = require('./routes/userRoutes');
 const { sendBillingNotifications } = require('./services/billingService');
 
 const app = express();
@@ -14,6 +16,9 @@ app.use(bodyParser.json());
 
 app.use("/api", messageRoutes);
 app.use("/api", chatbotRoutes);
+
+app.use('/pix', pixRoutes);
+// app.use('/user', userRoutes);
 
 // Agendar a tarefa para rodar todos os dias às 7h da manhã
 cron.schedule('0 10 * * *', () => {
