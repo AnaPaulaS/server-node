@@ -1,11 +1,12 @@
 const axios = require("axios");
+const logger = require("../utils/logger");
 
 const asaasApiKey = process.env.API_KEY_ASAAS;
 const asaasBaseUrl = process.env.BASE_URL_ASAAS;
 
 const getUserByCPF = async (cpfCnpj) => {
+  logger.http(`Requisição enviada para ${asaasBaseUrl}/customers`)
   try {
-    // buscar os dados do cliente pelo CPF
     const response = await axios.get(`${asaasBaseUrl}/customers`, {
       params: { cpfCnpj },
       headers: {
@@ -21,11 +22,13 @@ const getUserByCPF = async (cpfCnpj) => {
       return response.data.data[0].id;
     }
   } catch (error) {
-    console.log("Erro ao buscar o usuario:", error);
+    logger.error("Erro ao buscar o usuário:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 
 const getPayment = async (userId, status) => {
+  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments`)
   try {
     // Requisição para buscar os boletos do cliente pelo seu id
 
@@ -45,11 +48,13 @@ const getPayment = async (userId, status) => {
       return null;
     }
   } catch (error) {
-    console.log("Erro ao buscar os boletos:", error);
+    logger.error("Erro ao buscar os boletos:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 
 const getPaymentTypeableCode = async (payId) => {
+  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments/${payId}/identificationField`)
   try {
     const response = await axios.get(
       `${asaasBaseUrl}/payments/${payId}/identificationField`,
@@ -69,11 +74,13 @@ const getPaymentTypeableCode = async (payId) => {
       return null;
     }
   } catch (error) {
-    console.log("Erro ao buscar os codigo pix:", error);
+    logger.error("Erro ao buscar o codigo de barras:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 
 const getPaymentPixCode = async (payId) => {
+  logger.http(`Requisição enviada para ${asaasBaseUrl}/payments/${payId}/pixQrCode`)
   try {
     const response = await axios.get(
       `${asaasBaseUrl}/payments/${payId}/pixQrCode`,
@@ -93,7 +100,8 @@ const getPaymentPixCode = async (payId) => {
       return null;
     }
   } catch (error) {
-    console.log("Erro ao buscar os codigo pix:", error);
+    logger.error("Erro ao buscar o codigo pix:", { message: error.message, stack: error.stack });
+    throw error;
   }
 };
 

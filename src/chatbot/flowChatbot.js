@@ -3,6 +3,7 @@ const { isValidCPFOrCNPJ } = require("../utils/valid-cpfCnpj");
 const { getPaymentsByCPF } = require("../asaas-integration/service");
 
 const moment = require("moment");
+const logger = require("../utils/logger");
 
 // Simples armazenamento de estados na memória (em produção, use um banco de dados)
 let conversationStates = {};
@@ -11,8 +12,8 @@ let conversationStates = {};
 const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutos
 
 const flowChatbot = async (message) => {
-  console.log(
-    `<< LOG: Mensagem recebida de ${message.senderName}: ${message.text.message} >>`
+  logger.debug(
+    `Asaas - Mensagem recebida de ${message.senderName}: ${message.text.message}`
   );
 
   const phone = message.phone;
@@ -58,14 +59,10 @@ const flowChatbot = async (message) => {
         // Suponha que você tenha uma função para validar CPF/CNPJ
         responseMessage = `Buscando fatura para o CPF/CNPJ ${bodyMessage}...`;
 
-        // descomentar quando integrar com z-api
-        // await sendMessage(phone, responseMessage);
+        // TODO: descomentar quando integrar com z-api
+        await sendMessage(phone, responseMessage);
 
         const payments = await getPaymentsByCPF(bodyMessage);
-        console.log(
-          "<<LOG: há pagamento em aberto? >>",
-          payments === null ? "nao" : "sim"
-        );
 
         if (payments === null) {
           responseMessage = "Não há fatura em aberto para esse CPF/CNPJ";
@@ -105,9 +102,9 @@ const flowChatbot = async (message) => {
       break;
   }
 
-  // descomentar quando integrar com z-api
-  //   const response = await sendMessage(phone, responseMessage);
-  console.log("<<LOG: mensagem enviada para cliente:\n", responseMessage);
+  // TODO: descomentar quando integrar com z-api
+  const response = await sendMessage(phone, responseMessage);
+  logger.info("mensagem enviada para cliente:\n", responseMessage);
 };
 
 // Função para obter o estado atual de uma conversa

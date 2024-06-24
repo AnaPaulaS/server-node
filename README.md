@@ -13,13 +13,19 @@ DB_PASSWORD=senha
 EMAIL_USER=
 EMAIL_PASSWORD=
 
-
-
 ### para executar usando nodemon
 npm run dev
 
 ### servidor em producao no aws EC2
 ssh -i /home/ana/Documentos/chave.pem ec2-user@ec2-3-16-11-57.us-east-2.compute.amazonaws.com
+
+### acessar o database
+psql -h pitelecom.cjkikg8sqnuk.us-east-2.rds.amazonaws.com -U postgres -d pitelecom_db
+
+### acessar database por ssh
+ssh -f -N -i /home/ana/Documentos/chave.pem ec2-user@ec2-3-16-11-57.us-east-2.compute.amazonaws.com -L 3307:pitelecom.cjkikg8sqnuk.us-east-2.rds.amazonaws.com:5432
+psql -h localhost -p 3307 -d pitelecom_db -U postgres
+
 
 ### no servidor para alterar script de servico do servidor em execucao
 para acessar:
