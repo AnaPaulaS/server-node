@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const logger = require("./utils/logger");
 const messageRoutes = require("./routes/messageRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const asaasWebhook = require("./routes/asaasWebhook");
 const pixRoutes = require('./routes/pixRoutes');
 // const userRoutes = require('./routes/userRoutes');
 const { sendBillingNotifications } = require('./services/billingService');
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 
 app.use("/api", messageRoutes);
 app.use("/api", chatbotRoutes);
+app.use("/api", asaasWebhook);
 
 app.use('/pix', pixRoutes);
 // app.use('/user', userRoutes);

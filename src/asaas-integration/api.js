@@ -13,6 +13,8 @@ const createCustomer = async (cpfCnpj, mobilePhone, name) => {
         cpfCnpj: cpfCnpj,
         mobilePhone: mobilePhone,
         name: name,
+        groupName: "wifi-pre-pago",
+        notificationDisabled: true,
       },
       {
         headers: {
@@ -149,9 +151,7 @@ const getPaymentTypeableCode = async (payId) => {
 };
 
 const getPaymentPixCode = async (payId) => {
-  logger.http(
-    `GET enviado para ${asaasBaseUrl}/payments/${payId}/pixQrCode`
-  );
+  logger.http(`GET enviado para ${asaasBaseUrl}/payments/${payId}/pixQrCode`);
   try {
     const response = await axios.get(
       `${asaasBaseUrl}/payments/${payId}/pixQrCode`,
@@ -185,5 +185,5 @@ module.exports = {
   getPaymentTypeableCode,
   getPaymentPixCode,
   generatePixPayment,
-  createCustomer
+  createCustomer,
 };
