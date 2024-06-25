@@ -19,7 +19,7 @@ const {
  */
 const getPaymentsByCPF = async (cpfCnpj) => {
   const value = String(cpfCnpj).replace(/[^\d]+/g, "");
-  logger.debug('Asaas - solicitação de fatura para o cpfCnpj',value)
+  logger.debug("Asaas - solicitação de fatura para o cpfCnpj", value);
   try {
     const userId = await getUserByCPF(value);
 
@@ -53,7 +53,7 @@ const getPaymentsByCPF = async (cpfCnpj) => {
   }
 };
 
-const getFullDataPayments = async (cpfCnpj,statusPayment) => {
+const getFullDataPayments = async (cpfCnpj, statusPayment) => {
   const value = String(cpfCnpj).replace(/[^\d]+/g, "");
   try {
     const userId = await getUserByCPF(value);
@@ -78,7 +78,7 @@ const getFullDataPayments = async (cpfCnpj,statusPayment) => {
     if (pixCode === null) {
       return null;
     }
-    const typeableCode = await getPaymentTypeableCode(latestPendingPayment.id);
+    const typeableCode = await getPaymentTypeableCode(latestPendingPayment.id);    
     if (typeableCode === null) {
       return null;
     }
