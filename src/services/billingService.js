@@ -41,13 +41,11 @@ const sendEmail = (to, subject, templateName, templateData) => {
     html: htmlToSend,
   };
 
-  logger.debug("mailOptions ", mailOptions ? "ok" : "com erro");
-
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       logger.error("Erro ao enviar email:", error);
     } else {
-      logger.debug("Email sent:", info.response)
+      logger.debug("Email sent:", info.response);
     }
   });
 };
@@ -66,7 +64,7 @@ const sendMessageWithDelay = async (client, payments, config) => {
   if (client.phone) {
     const message = config.message(client, payments);
     // TODO: descomentar
-    await sendMessage(client.phone, message);    
+    await sendMessage(client.phone, message);
     logger.info(message);
   }
 };
@@ -150,11 +148,18 @@ const sendBillingNotifications = async () => {
 
     // Enfileira cada cliente para envio de e-mail
     for (const client of users.rows) {
-      const payments = await getFullDataPayments(client.cpfCnpj);
-      payments.username = client.name;
 
-      // Enfileira a função de envio de e-mail com atraso
-      await queue.enqueue(() => sendMessageWithDelay(client, payments, config));
+      const payments = await getFullDataPayments(
+        client.cpfcnpj,
+        config.statusPayment
+      );
+      // cuidado que banco padrao escrita ta diferente para cpfcnpj
+      if (payments !== null) {
+        payments.username = client.name;
+
+        // Enfileira a função de envio de e-mail com atraso
+        await queue.enqueue(() => sendMessageWithDelay(client, payments, config));
+      }
     }
   }
   // Aguarda a conclusão de todos os envios

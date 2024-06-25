@@ -27,13 +27,13 @@ const getUserByCPF = async (cpfCnpj) => {
   }
 };
 
-const getPayment = async (userId, status) => {
+const getPayment = async (customer, status) => {
   logger.http(`Requisição enviada para ${asaasBaseUrl}/payments`)
   try {
     // Requisição para buscar os boletos do cliente pelo seu id
 
     const response = await axios.get(`${asaasBaseUrl}/payments`, {
-      params: { userId, status },
+      params: { customer, status },
       headers: {
         "Content-Type": "application/json",
         access_token: asaasApiKey,
